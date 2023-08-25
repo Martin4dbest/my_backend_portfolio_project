@@ -14,20 +14,29 @@ class User(db.Model):
 
 @app.route('/')
 def home():
-    return "Welcome to the Flask App"
+    registration_url = '/register'  # Update this with the actual registration route
+    return render_template('home.html', registration_url=registration_url)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        hashed_password = generate_password_hash(password, method='sha256')
-        
-        new_user = User(username=username, password_hash=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
-    
+
+        # Check if the username already exists
+        existing_user = User.query.filter_by(username=username).first()
+
+        if existing_user:
+            error = 'Username already taken'
+            return render_template('register.html', error=error)
+        else:
+            # Create a new user
+            hashed_password = generate_password_hash(password)
+            new_user = User(username=username, password_hash=hashed_password)
+            db.session.add(new_user)
+            db.session.commit()
+            return redirect(url_for('login'))
+
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -41,6 +50,9 @@ def login():
         if user and check_password_hash(user.password_hash, password):
             session['user_id'] = user.id
             return redirect(url_for('dashboard'))
+        else:
+            error = 'Invalid username or password'  # Set the error message
+            return render_template('login.html', error=error)
     
     return render_template('login.html')
 
