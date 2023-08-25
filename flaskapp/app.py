@@ -15,7 +15,8 @@ class User(db.Model):
 @app.route('/')
 def home():
     registration_url = '/register'  # Update this with the actual registration route
-    return render_template('home.html', registration_url=registration_url)
+    login_url = '/login'
+    return render_template('home.html', registration_url=registration_url, login_url=login_url)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
