@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash,check_password_hash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'e8ab7c3d28ef5d1a4f6d2e3b0c5a7b8f'
@@ -14,8 +14,8 @@ class User(db.Model):
 
 @app.route('/')
 def home():
-    registration_url = '/register'  # Update this with the actual registration route
-    login_url = '/login'
+    registration_url = '/register'
+    login_url = '/login'  # Update this with the actual login route URL
     return render_template('home.html', registration_url=registration_url, login_url=login_url)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -24,19 +24,19 @@ def register():
         username = request.form['username']
         password = request.form['password']
 
-        # Check if the username already exists
         existing_user = User.query.filter_by(username=username).first()
-
         if existing_user:
             error = 'Username already taken'
             return render_template('register.html', error=error)
         else:
-            # Create a new user
             hashed_password = generate_password_hash(password)
             new_user = User(username=username, password_hash=hashed_password)
+
+            # Save the new user to the database
             db.session.add(new_user)
             db.session.commit()
-            return redirect(url_for('login'))
+
+            return redirect('/login')  # Redirect to the login page after registration
 
     return render_template('register.html')
 
