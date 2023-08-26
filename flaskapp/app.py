@@ -61,13 +61,14 @@ def login():
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' in session:
-        return "Welcome to the dashboard"
+        return render_template('dashboard.html')
     return redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
-    return redirect(url_for('login'))
+    return render_template('logout.html')
+
 
 if __name__ == '__main__':
     with app.app_context():
