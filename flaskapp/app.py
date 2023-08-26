@@ -36,9 +36,10 @@ def register():
             db.session.add(new_user)
             db.session.commit()
 
-            return redirect('/login')  # Redirect to the login page after registration
-
+            return redirect('/login')
     return render_template('register.html')
+        
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
