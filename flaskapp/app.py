@@ -7,10 +7,14 @@ app.config['SECRET_KEY'] = 'e8ab7c3d28ef5d1a4f6d2e3b0c5a7b8f'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db = SQLAlchemy(app)
 
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(100))  #
+    email = db.Column(db.String(120)) #
+
 
 @app.route('/')
 def home():
@@ -57,6 +61,31 @@ def login():
             return render_template('login.html', error=error)
     
     return render_template('login.html')
+
+
+# ... your existing code ...
+
+# Route for user profile
+@app.route('/profile')
+def profile():
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        return render_template('profile.html', user=user)
+    return redirect(url_for('login'))
+
+# Route for updating user profile
+@app.route('/update_profile', methods=['GET', 'POST'])
+def update_profile():
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        if request.method == 'POST':
+            user.name = request.form['name']
+            user.email = request.form['email']
+            db.session.commit()
+            return redirect(url_for('profile'))
+        return render_template('update_profile.html', user=user)
+    return redirect(url_for('login'))
+
 
 @app.route('/dashboard')
 def dashboard():
