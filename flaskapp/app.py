@@ -15,12 +15,22 @@ class User(db.Model):
     name = db.Column(db.String(100))  #
     email = db.Column(db.String(120)) #
 
+# Define Product model
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    image_url = db.Column(db.String(200), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
 
 @app.route('/')
 def home():
     registration_url = '/register'
     login_url = '/login'  # Update this with the actual login route URL
     return render_template('home.html', registration_url=registration_url, login_url=login_url)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -63,7 +73,20 @@ def login():
     return render_template('login.html')
 
 
-# ... your existing code ...
+#routes for product listing
+@app.route('/products')
+def products():
+    products = Product.query.all()
+    return render_template('products.html', products=products)
+
+
+#routes for product details
+@app.route('/product/<int:product_id>')
+def product_details(product_id):
+    product = Product.query.get(product_id)
+    return render_template('product_details.html', product=product)
+
+
 
 # Route for user profile
 @app.route('/profile')
@@ -101,5 +124,24 @@ def logout():
 
 if __name__ == '__main__':
     with app.app_context():
+        # Create the database tables
         db.create_all()
+
+        # Check if the sample user already exists
+        existing_user = User.query.filter_by(username='sample_user').first()
+
+        if not existing_user:
+            # Create the sample user
+            user = User(username='sample_user', password_hash='hashed_password')
+            db.session.add(user)
+            
+            # Create sample products associated with the user
+            product1 = Product(name='Toy Car', description='A fun toy car for kids.', price=9.99, image_url='toy_car.jpg', user_id=user.id)
+            product2 = Product(name='Stuffed Animal', description='Soft and cuddly stuffed animal.', price=14.99, image_url='stuffed_animal.jpg', user_id=user.id)
+            db.session.add_all([product1, product2])
+            
+            # Commit the changes to the database
+            db.session.commit()
+
+    # Start the Flask app
     app.run(debug=True)

@@ -2,9 +2,22 @@
 <html>
 <head>
     <title>Dashboard</title>
+    <!-- Link to Bootstrap CSS stylesheet -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Welcome to the dashboard</h1>
-    <a href="{{ url_for('logout') }}">Logout</a>
+    <div class="container">
+        <h1>Welcome to the dashboard</h1>
+        <!-- Add a button link to the product listings page with increased font size -->
+        <a href="{{ url_for('products') }}" class="btn btn-primary" style="font-size: 1.5rem;">View Products</a>
+    </div>
+    
+    <!-- Add space between the sections -->
+    <div style="margin-top: 20px;"></div>
+    
+    <!-- Logout link at the bottom with increased font size -->
+    <div class="container text-center">
+        <a href="{{ url_for('logout') }}" style="font-size: 1.2rem;">Logout</a>
+    </div>
 </body>
 </html>
