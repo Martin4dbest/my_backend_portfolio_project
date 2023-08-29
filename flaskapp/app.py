@@ -25,11 +25,80 @@ class Product(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 
+class CartProduct(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cart_id = db.Column(db.Integer, db.ForeignKey('cart.id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    quantity = db.Column(db.Integer, default=1)
+
+
+class Cart(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    products = db.relationship('Product', secondary=CartProduct.__table__) 
+    # Use the actual table name
+
+
+# Cart Routes
+@app.route('/add_to_cart/<int:product_id>', methods=['POST'])
+def add_to_cart(product_id):
+    if 'user_id' in session:
+        user_id = session['user_id']
+        user_cart = Cart.query.filter_by(user_id=user_id).first()
+        if user_cart is None:
+            user_cart = Cart(user_id=user_id)
+            db.session.add(user_cart)
+
+        cart_product = CartProduct.query.filter_by(cart_id=user_cart.id, product_id=product_id).first()
+        if cart_product:
+            cart_product.quantity += 1
+        else:
+            cart_product = CartProduct(cart_id=user_cart.id, product_id=product_id)
+            db.session.add(cart_product)
+
+        db.session.commit()
+        flash('Product added to cart', 'success')
+    else:
+        flash('Please log in to add products to your cart', 'warning')
+
+    return redirect(url_for('products'))
+
+@app.route('/view_cart')
+def view_cart():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        user_cart = Cart.query.filter_by(user_id=user_id).first()
+        return render_template('cart.html', user_cart=user_cart)
+    else:
+        flash('Please log in to view your cart', 'warning')
+        return redirect(url_for('login'))
+
+@app.route('/checkout')
+def checkout():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        user_cart = Cart.query.filter_by(user_id=user_id).first()
+        return render_template('checkout.html', user_cart=user_cart)
+    else:
+        flash('Please log in to proceed to checkout', 'warning')
+        return redirect(url_for('login'))
+
+
+
 @app.route('/')
 def home():
     registration_url = '/register'
     login_url = '/login'  # Update this with the actual login route URL
     return render_template('home.html', registration_url=registration_url, login_url=login_url)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')  
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
 
 
 @app.route('/register', methods=['GET', 'POST'])
